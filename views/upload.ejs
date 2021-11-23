@@ -1,0 +1,43 @@
+<%- include('./partials/header')  %>
+
+
+    <section>
+
+        <div class="my-upload-cont text-center my-test">
+            <div class="d-flex justify-content-center">
+                <div class="card" style="width: 18rem;">
+                    <img src="/pix/upload.png" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <form action="/api/upload" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="myxlfile" class="form-label"></label>
+                                <input class="form-control" type="file" name="myxlfile">
+                            </div>
+                            <input type="submit" class="btn-primary mb-3" value="UPLOAD">
+                        </form>
+                        <% if(locals.downloadUrl) { %>
+                            <div class="d-flex justify-content-center">
+                                <div class="input-group mb-3" style="max-width: 576px;">
+                                    <input type="text" id="myDownloadUrl" value="<%= downloadUrl %>" class="form-control" placeholder="download url" aria-label="download url" aria-describedby="my-button-addon">
+                                    <button class="btn btn-secondary" type="button" id="my-button-addon">📑</button>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <form action="/api/file/mail" method="post">
+                                    <input type="hidden" name="downloadUrl" value="<%= downloadUrl %>">
+                                    <div class="input-group mb-3">
+                                        <input type="email" class="form-control" name="email" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2">
+                                        <button class="btn btn-secondary" type="submit" id="button-addon2">Mail 📧</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <% } %>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <%- include('./partials/footer')  %>
