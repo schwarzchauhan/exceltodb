@@ -4,6 +4,7 @@ const multer = require('multer');
 // https://github.com/SheetJS/sheetjs#parsing-workbooks
 const XLSX = require('xlsx');
 const Candidate = require('../model/candidate');
+const async = require('async');\
 
 // https://github.com/expressjs/multer#diskstorage
 let storage = multer.diskStorage({
@@ -46,32 +47,45 @@ router.route('/')
             const xltojsondata = XLSX.utils.sheet_to_json(worksheet1);
             // res.status(200).json(xltojsondata);
             const xldataobj = JSON.parse(JSON.stringify(xltojsondata));
-            const attr = ['Name of the Candidate', 'Email', 'Mobile No.', 'Date of Birth', 'Work Experience', 'Resume Title', 'Current Location', 'Postal Address', 'Current Employer', 'Current Designation']
+            const attr = ['Name of the Candidate', 'Email', 'Mobile No.', 'Date of Birth', 'Work Experience', 'Resume Title', 'Current Location', 'Postal Address', 'Current Employer', 'Current Designation'];
             console.log(attr);
-            xldataobj.forEach(async(e) => {
-                console.log(e);
-                const c = new Candidate({
-                    name: e[attr[0]],
-                    email: e[attr[1]],
-                    number: e[attr[2]],
-                    dob: e[attr[3]],
-                    work_exp: e[attr[4]],
-                    resume_title: e[attr[5]],
-                    current_loc: e[attr[6]],
-                    postal_addr: e[attr[7]],
-                    current_employer: e[attr[8]],
-                    current_desgn: e[attr[9]]
+
+
+            // https://caolan.github.io/async/v3/docs.html#each
+            // https://caolan.github.io/async/v3/docs.html#eachSeries
+            async.eachSeries(xldataobj, async function(e, cb) {
+                    console.log(e);
+                    const old_c = await Candidate.findOne({ email: e[attr[1]] });
+                    if (old_c) {
+                        console.log(`duplicate record ${old_c.email} already registered!!!`);
+                        return cb();
+                    } else {
+                        const c = new Candidate({
+                            name: e[attr[0]],
+                            email: e[attr[1]],
+                            number: e[attr[2]],
+                            dob: e[attr[3]],
+                            work_exp: e[attr[4]],
+                            resume_title: e[attr[5]],
+                            current_loc: e[attr[6]],
+                            postal_addr: e[attr[7]],
+                            current_employer: e[attr[8]],
+                            current_desgn: e[attr[9]]
+                        });
+                        await c.save();
+                        console.log(`succesfully saved record ${c.email}!!!`);
+                        return cb();
+                    }
+                },
+                function(err) {
+                    if (err) {
+                        console.log(err.message);
+                    } else {
+                        console.log('all done!!!');
+                    }
+
                 });
-                if (await Candidate.findOne({ email: c.email })) {
-                    console.log('already exists', c);
-                } else {
-                    c.save(function(err) {
-                        if (err) return console.log(err.message);
-                        // saved!
-                        console.log('saved', c);
-                    });
-                }
-            });
+
         } catch (err) {
             return console.log(err.message);
         }
