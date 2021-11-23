@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 // https://github.com/SheetJS/sheetjs#parsing-workbooks
 const XLSX = require('xlsx');
+const Candidate = require('../model/candidate');
 
 // https://github.com/expressjs/multer#diskstorage
 let storage = multer.diskStorage({
@@ -43,8 +44,34 @@ router.route('/')
             const worksheet1 = workbook.Sheets[firstSheetName];
             // console.log(XLSX.utils.sheet_to_json(worksheet1));
             const xltojsondata = XLSX.utils.sheet_to_json(worksheet1);
-            res.status(200).json(xltojsondata);
-
+            // res.status(200).json(xltojsondata);
+            const xldataobj = JSON.parse(JSON.stringify(xltojsondata));
+            const attr = ['Name of the Candidate', 'Email', 'Mobile No.', 'Date of Birth', 'Work Experience', 'Resume Title', 'Current Location', 'Postal Address', 'Current Employer', 'Current Designation']
+            console.log(attr);
+            xldataobj.forEach(async(e) => {
+                console.log(e);
+                const c = new Candidate({
+                    name: e[attr[0]],
+                    email: e[attr[1]],
+                    number: e[attr[2]],
+                    dob: e[attr[3]],
+                    work_exp: e[attr[4]],
+                    resume_title: e[attr[5]],
+                    current_loc: e[attr[6]],
+                    postal_addr: e[attr[7]],
+                    current_employer: e[attr[8]],
+                    current_desgn: e[attr[9]]
+                });
+                if (await Candidate.findOne({ email: c.email })) {
+                    console.log('already exists', c);
+                } else {
+                    c.save(function(err) {
+                        if (err) return console.log(err.message);
+                        // saved!
+                        console.log('saved', c);
+                    });
+                }
+            });
         } catch (err) {
             return console.log(err.message);
         }
