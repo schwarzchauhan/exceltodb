@@ -4,7 +4,7 @@ const multer = require('multer');
 // https://github.com/SheetJS/sheetjs#parsing-workbooks
 const XLSX = require('xlsx');
 const Candidate = require('../model/candidate');
-const async = require('async');\
+const async = require('async');
 
 // https://github.com/expressjs/multer#diskstorage
 let storage = multer.diskStorage({
@@ -35,6 +35,13 @@ router.route('/')
             // return res.status(200).send('ok');
             const xlfilepath = `./public/uploads/${req.file.filename}`;
             console.log(`./public/uploads/${req.file.filename}`);
+            const xlfilename = req.file.filename;
+            const st_arr = xlfilename.split('.');
+            const ext = st_arr[st_arr.length - 1];
+            console.log(ext);
+            if (!(ext === 'xlsx' || ext === 'xls')) {
+                return res.status(400).render('upload', { message: 'OOPs invalid file format' });
+            }
             const workbook = XLSX.readFile(xlfilepath); // https://github.com/SheetJS/sheetjs#working-with-the-workbook
             // console.log(workbook);
             // return res.status(200).json(workbook);
@@ -54,38 +61,41 @@ router.route('/')
             // https://caolan.github.io/async/v3/docs.html#each
             // https://caolan.github.io/async/v3/docs.html#eachSeries
             async.eachSeries(xldataobj, async function(e, cb) {
-                    console.log(e);
+                    // console.log(e);
                     const old_c = await Candidate.findOne({ email: e[attr[1]] });
                     if (old_c) {
                         console.log(`duplicate record ${old_c.email} already registered!!!`);
-                        return cb();
                     } else {
-                        const c = new Candidate({
-                            name: e[attr[0]],
-                            email: e[attr[1]],
-                            number: e[attr[2]],
-                            dob: e[attr[3]],
-                            work_exp: e[attr[4]],
-                            resume_title: e[attr[5]],
-                            current_loc: e[attr[6]],
-                            postal_addr: e[attr[7]],
-                            current_employer: e[attr[8]],
-                            current_desgn: e[attr[9]]
-                        });
-                        await c.save();
-                        console.log(`succesfully saved record ${c.email}!!!`);
-                        return cb();
+                        if (!(e[attr[0]] && e[attr[1]])) {
+                            console.log(`Name & Email both are required!!!`);
+                        } else {
+                            const c = new Candidate({
+                                name: e[attr[0]],
+                                email: e[attr[1]],
+                                number: e[attr[2]],
+                                dob: e[attr[3]],
+                                work_exp: e[attr[4]],
+                                resume_title: e[attr[5]],
+                                current_loc: e[attr[6]],
+                                postal_addr: e[attr[7]],
+                                current_employer: e[attr[8]],
+                                current_desgn: e[attr[9]]
+                            });
+                            await c.save();
+                            console.log(`succesfully saved record ${c.email}!!!`);
+                        }
                     }
+                    return cb();
                 },
                 function(err) {
                     if (err) {
                         console.log(err.message);
                     } else {
                         console.log('all done!!!');
+                        return res.status(200).render('info', { message: 'Your records will be processed shortly.', imgUrl: '/pix/success.png' });
                     }
 
                 });
-
         } catch (err) {
             return console.log(err.message);
         }
