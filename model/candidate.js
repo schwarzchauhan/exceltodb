@@ -8,14 +8,13 @@ const candidateSchema = new mongoose.Schema({
     email: {
         type: String,
         unique: true,
-        required: true,
-        index: true
+        required: true
     },
     number: {
         type: String
     },
     dob: {
-        type: Number
+        type: String
     },
     work_exp: {
         type: String

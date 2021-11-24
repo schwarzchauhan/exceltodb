@@ -51,8 +51,8 @@ router.route('/')
             console.log(firstSheetName);
             const worksheet1 = workbook.Sheets[firstSheetName];
             // console.log(XLSX.utils.sheet_to_json(worksheet1));
-            const xltojsondata = XLSX.utils.sheet_to_json(worksheet1);
-            // res.status(200).json(xltojsondata);
+            const xltojsondata = XLSX.utils.sheet_to_json(worksheet1, { raw: false }); // https://github.com/SheetJS/sheetjs#json
+            // return res.status(200).json(xltojsondata);
             const xldataobj = JSON.parse(JSON.stringify(xltojsondata));
             const attr = ['Name of the Candidate', 'Email', 'Mobile No.', 'Date of Birth', 'Work Experience', 'Resume Title', 'Current Location', 'Postal Address', 'Current Employer', 'Current Designation'];
             console.log(attr);
